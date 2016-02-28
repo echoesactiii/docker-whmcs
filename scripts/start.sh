@@ -15,9 +15,8 @@ if [ ! -z "$GIT_NAME" ]; then
 fi
 
 # Install Extras
-if [ ! -z "$DEBS" ]; then
- apt-get update
- apt-get install -y $DEBS
+if [ ! -z "$RPMS" ]; then
+ yum install -y $RPMS
 fi
 
 # Pull down code form git for our site!
@@ -33,8 +32,8 @@ fi
 
 # Display PHP error's or not
 if [[ "$ERRORS" != "1" ]] ; then
-  sed -i -e "s/error_reporting =.*=/error_reporting = E_ALL/g" /etc/php5/fpm/php.ini
-  sed -i -e "s/display_errors =.*/display_errors = On/g" /etc/php5/fpm/php.ini
+  sed -i -e "s/error_reporting =.*=/error_reporting = E_ALL/g" /etc/php.ini
+  sed -i -e "s/display_errors =.*/display_errors = On/g" /etc/php.ini
 fi
 
 # Tweak nginx to match the workers to cpu's
@@ -56,7 +55,7 @@ if [[ "$TEMPLATE_NGINX_HTML" == "1" ]] ; then
 fi
 
 # Again set the right permissions (needed when mounting from a volume)
-chown -Rf www-data.www-data /usr/share/nginx/html/
+chown -Rf nginx.nginx /usr/share/nginx/html/
 
 # Start supervisord and services
 /usr/bin/supervisord -n -c /etc/supervisord.conf
