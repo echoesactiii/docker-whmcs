@@ -21,7 +21,7 @@ You can then browse to ```http://<DOCKER_HOST>:8080``` to view the default insta
 ### Volumes
 If you want to link to your web site directory on the docker host to the container run:
 ```
-sudo docker run --name nginx -p 8080:80 -v /your_code_directory:/usr/share/nginx/html -d richarvey/nginx-php-fpm
+sudo docker run --name nginx -p 8080:80 -v /your_code_directory:/usr/share/nginx/html -d thekatastrophe/nginx-php-fpm
 ```
 ### Dynamically Pulling code from git
 One of the nice features of this container is its ability to pull code from a git repository with a couple of environmental variables passed at run time.
@@ -30,11 +30,11 @@ One of the nice features of this container is its ability to pull code from a gi
 
 To run the container and pull code simply specify the GIT_REPO URL including *git@* and then make sure you have a folder on the docker host with your id_rsa key stored in it:
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git'  -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
+sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git'  -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d thekatastrophe/nginx-php-fpm
 ```
 To pull a repository and specify a branch add the GIT_BRANCH environment variable:
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
+sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d thekatastrophe/nginx-php-fpm
 ```
 ### Linking
 Linking to containers also exposes the linked container environment variables which is useful for templating and configuring web apps.
