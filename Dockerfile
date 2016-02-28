@@ -16,7 +16,7 @@ RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos
 yum -y install nginx
 
 # Install php-fpm etc
-RUN yum install php-fpm php-mysql php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap
+RUN yum -y install php-fpm php-mysql php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap
 
 # tweak php-fpm config
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php.ini && \
