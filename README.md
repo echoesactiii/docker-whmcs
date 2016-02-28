@@ -1,31 +1,21 @@
 ## Introduction
-This is a Dockerfile to build a container image for nginx and php-fpm, with the ability to pull website code from git. The container can also use environment variables to configure your web application using the templating detailed in the special features section.
+This is a Dockerfile to build a container image for nginx and php-fpm, with the ability to pull website code from git. The container can also use environment variables to configure your web application using the templating detailed in the special features section. This is based on [https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm) however has been modified to work with CentOS7 as a base image instead of Ubuntu.
 ### Git repository
-The source files for this project can be found here: [https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm)
-
-If you have any improvements please submit a pull request.
+The source files for this project can be found here: [https://github.com/TheKatastrophe/nginx-php-fpm](https://github.com/TheKatastrophe/nginx-php-fpm)
 ### Docker hub repository
-The Docker hub build can be found here: [https://registry.hub.docker.com/u/richarvey/nginx-php-fpm/](https://registry.hub.docker.com/u/richarvey/nginx-php-fpm/)
-## Versions
-- Nginx Mainline Version: **1.9.12**
-- PHP: **5.5.9-1ubuntu4.14**
-- Ubuntu Trusty: **14.04.4**
-
+TBD
 ## Building from source
 To build from source you need to clone the git repo and run docker build:
 ```
-git clone https://github.com/ngineered/nginx-php-fpm.git
-docker build -t richarvey/nginx-php-fpm:latest .
+git clone https://github.com/TheKatastrophe/nginx-php-fpm.git
+docker build -t thekatastrophe/nginx-php-fpm:latest .
 ```
 ## Pulling from Docker Hub
-Pull the image from docker hub rather than downloading the git repo. This prevents you having to build the image on every docker host:
-```
-docker pull richarvey/nginx-php-fpm:latest
-```
+TBD
 ## Running
 To simply run the container:
 ```
-sudo docker run --name nginx -p 8080:80 -d richarvey/nginx-php-fpm
+sudo docker run --name nginx -p 8080:80 -d thekatastrophe/nginx-php-fpm
 ```
 You can then browse to ```http://<DOCKER_HOST>:8080``` to view the default install files.
 ### Volumes
@@ -62,7 +52,7 @@ MYSQL_PORT_3306_TCP=tcp://172.17.0.236:3306
 MYSQL_ENV_MYSQL_USER=wordpress_user
 MYSQL_ENV_MYSQL_PASSWORD=wordpress_password
 MYSQL_ENV_MYSQL_VERSION=5.6.22
-MYSQL_NAME=/sick_mccarthy/mysql
+MYSQL_NAME=/something/mysql
 MYSQL_PORT_3306_TCP_PROTO=tcp
 MYSQL_PORT_3306_TCP_ADDR=172.17.0.236
 MYSQL_ENV_MYSQL_MAJOR=5.6
@@ -70,14 +60,14 @@ MYSQL_PORT=tcp://172.17.0.236:3306
 ```
 To link the container launch like this:
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 --link some-mysql:mysql -d richarvey/nginx-php-fpm
+sudo docker run -e 'GIT_REPO=git@github.com:you/website.git' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 --link some-mysql:mysql -d TheKatastrophe/nginx-php-fpm
 ```
 ### Enabling SSL or Special Nginx Configs
-As with all docker containers its possible to link resources from the host OS to the guest. This makes it really easy to link in custom nginx default config files or extra virtual hosts and SSL enabled sites. For SSL sites first create a directory somewhere such as */opt/deployname/ssl/*. In this directory drop you SSL cert and Key in. Next create a directory for your custom hosts such as  */opt/deployname/sites-enabled*. In here load your custom default.conf file which references your SSL cert and keys at the location, for example:  */etc/nginx/ssl/xxxx.key*
+As with all docker containers its possible to link resources from the host OS to the guest. This makes it really easy to link in custom nginx default config files or extra virtual hosts and SSL enabled sites. For SSL sites first create a directory somewhere such as */opt/deployname/ssl/*. In this directory drop you SSL cert and Key in. Next create a directory for your custom hosts such as  */opt/deployname/nginx-conf*. In here load your custom default.conf file which references your SSL cert and keys at the location, for example:  */etc/nginx/ssl/xxxx.key*
 
 Then start your container and connect these volumes like so:
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -v /opt/ngddeploy/:/root/.ssh -v /opt/deployname/ssl:/etc/nginx/ssl -v /opt/deployname/sites-enabled:/etc/nginx/sites-enabled -p 8080:80 --link some-mysql:mysql -d richarvey/nginx-php-fpm
+sudo docker run -e 'GIT_REPO=git@github.com:you/website.git’ -v /opt/ngddeploy/:/root/.ssh -v /opt/deployname/ssl:/etc/nginx/ssl -v /opt/deployname/nginx-conf:/etc/nginx/conf.d -p 8080:80 --link some-mysql:mysql -d TheKatastrophe/nginx-php-fpm
 ```
 ## Special Features
 
@@ -92,9 +82,9 @@ In order to refresh the code in a container and pull newer code form git simply 
 sudo docker exec -t -i <CONTAINER_NAME> /usr/bin/pull
 ```
 ### Install Extra Modules
-If you wish to install extras at boot time, such as extra php modules you can specify this by adding the DEBS flag, to add multiple packages you need to space separate the values:
+If you wish to install extras at boot time, such as extra php modules you can specify this by adding the RPMS flag, to add multiple packages you need to space separate the values:
 ```
-sudo docker run --name nginx -e 'DEBS=php5-mongo php-json" -p 8080:80 -d richarvey/nginx-php-fpm
+sudo docker run --name nginx -e ‘RPMS=php-snmp php-pspell” -p 8080:80 -d TheKatastrophe/nginx-php-fpm
 ```
 ### Templating
 This container will automatically configure your web application if you template your code. For example if you are linking to MySQL like above, and you have a config.php file where you need to set the MySQL details include $$_MYSQL_ENV_MYSQL_DATABASE_$$ style template tags.
@@ -112,7 +102,7 @@ If you want to link to an external MySQL DB and not using linking you can pass v
 
 Example:
 ```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -e 'MYSQL_HOST=host.x.y.z' -e 'MYSQL_USER=username' -e 'MYSQL_PASS=password' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d richarvey/nginx-php-fpm
+sudo docker run -e 'GIT_REPO=git@github.com:you/website.git' -e 'GIT_BRANCH=stage' -e 'MYSQL_HOST=host.x.y.z' -e 'MYSQL_USER=username' -e 'MYSQL_PASS=password' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d TheKatastrophe/nginx-php-fpm
 ```
 
 This will expose the following variables that can be used to template your code.
