@@ -50,7 +50,9 @@ There are four environment variables that can be set for this:
 
 If specifying a HTTP URL that points to a public repository not requiring authentication, nothing further needs to be done. If authentication is required, I recommend using an SSH URL and providing an SSH key to be used for the deploy. 
 
-This can be done using linked volumes (see above): before deploying the container, create a folder on the Docker host, such as `/opt/deploy` and create a file called `id_rsa` in it containing the private key used to authenticate to the Git host. **It is important** that you then set the permissions on the key correctly: `chmod 0600 /opt/deploy/id_rsa` or the key will not be used. Then link `/opt/deploy` on the host to `/root/.ssh` within the container using these flags: `-v /opt/deploy:/root/.ssh`.
+This can be done using linked volumes (see above): before deploying the container, create a folder on the Docker host, such as `/opt/deploy` and create a file called `id_rsa` in it containing the private key used to authenticate to the Git host. Then link `/opt/deploy` on the host to `/root/.ssh` within the container using these flags: `-v /opt/deploy:/root/.ssh`.
+
+**It is important** that you then set the permissions on the key correctly: `chmod 0600 /opt/deploy/id_rsa` or the key will not be used. The `start.sh` script, when the container is deployed, will set the permissions on the key if it exists, but if the key is replaced/changed, you need to ensure those permissions are maintained.
 
 ##### Pushing and pulling
 
