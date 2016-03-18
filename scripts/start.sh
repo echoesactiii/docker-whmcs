@@ -1,9 +1,17 @@
 #!/bin/bash
 
-# Disable Strict Host checking for non interactive git clones
+# Disable Strict Host checking for non interactive git clones, set permissions for SSH key if it exists.
 
 mkdir -p -m 0700 /root/.ssh
-echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+if [ ! -e "/root/.ssh/config" ]; then
+  echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+else
+  grep "StrictHostKeyChecking no" /root/.ssh/config || echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+fi
+if [ -e "/root/.ssh/id_rsa" ]; then
+  chmod 0600 /root/.ssh/id_rsa
+fi
+
 
 # Setup git variables
 if [ ! -z "$GIT_EMAIL" ]; then
