@@ -1,142 +1,86 @@
 ## Introduction
-This is a Dockerfile to build a container image for nginx and php-fpm, with the ability to pull website code from git. The container can also use environment variables to configure your web application using the templating detailed in the special features section. This is based on [https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm) however has been modified to work with CentOS7 as a base image instead of Ubuntu.
-### Git repository
-The source files for this project can be found here: [https://github.com/TheKatastrophe/nginx-php-fpm](https://github.com/TheKatastrophe/nginx-php-fpm)
-### Docker hub repository
-TBD
-## Building from source
-To build from source you need to clone the git repo and run docker build:
-```
-git clone https://github.com/TheKatastrophe/nginx-php-fpm.git
-docker build -t katastrophe/nginx-php-fpm:latest .
-```
-## Pulling from Docker Hub
-TBD
-## Running
-To simply run the container:
-```
-sudo docker run --name nginx -p 8080:80 -d katastrophe/nginx-php-fpm
-```
-You can then browse to ```http://<DOCKER_HOST>:8080``` to view the default install files.
-### Volumes
-If you want to link to your web site directory on the docker host to the container run:
-```
-sudo docker run --name nginx -p 8080:80 -v /your_code_directory:/usr/share/nginx/html -d katastrophe/nginx-php-fpm
-```
-### Dynamically Pulling code from git
-One of the nice features of this container is its ability to pull code from a git repository with a couple of environmental variables passed at run time.
+This Dockerfile will build a container image for nginx with php-fpm for web development and webapps. It supports templating, automated cloning from git, installation of [Composer](https://getcomposer.org/) and the installation of dependencies using Composer. The image is based on CentOS 7, and was initally forked from [this repository](https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm).
 
-**Note:** You need to have your SSH key that you use with git to enable the deployment. I recommend using a special deploy key per project to minimise the risk.
+## Repositories
 
-To run the container and pull code simply specify the GIT_REPO URL including *git@* and then make sure you have a folder on the docker host with your id_rsa key stored in it:
-```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git'  -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d katastrophe/nginx-php-fpm
-```
-To pull a repository and specify a branch add the GIT_BRANCH environment variable:
-```
-sudo docker run -e 'GIT_REPO=git@git.ngd.io:ngineered/ngineered-website.git' -e 'GIT_BRANCH=stage' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d katastrophe/nginx-php-fpm
-```
-### Linking
-Linking to containers also exposes the linked container environment variables which is useful for templating and configuring web apps.
+### GitHub
+The source files for this project are available on GitHub: [https://github.com/TheKatastrophe](https://github.com/TheKatastrophe)
 
-Run MySQL container with some extra details:
-```
-sudo docker run --name some-mysql -e MYSQL_ROOT_PASSWORD=yayMySQL -e MYSQL_DATABASE=wordpress -e MYSQL_USER=wordpress_user -e MYSQL_PASSWORD=wordpress_password -d mysql
-```
-This exposes the following environment variables to the container when linked:
-```
-MYSQL_ENV_MYSQL_DATABASE=wordpress
-MYSQL_ENV_MYSQL_ROOT_PASSWORD=yayMySQL
-MYSQL_PORT_3306_TCP_PORT=3306
-MYSQL_PORT_3306_TCP=tcp://172.17.0.236:3306
-MYSQL_ENV_MYSQL_USER=wordpress_user
-MYSQL_ENV_MYSQL_PASSWORD=wordpress_password
-MYSQL_ENV_MYSQL_VERSION=5.6.22
-MYSQL_NAME=/something/mysql
-MYSQL_PORT_3306_TCP_PROTO=tcp
-MYSQL_PORT_3306_TCP_ADDR=172.17.0.236
-MYSQL_ENV_MYSQL_MAJOR=5.6
-MYSQL_PORT=tcp://172.17.0.236:3306
-```
-To link the container launch like this:
-```
-sudo docker run -e 'GIT_REPO=git@github.com:you/website.git' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 --link some-mysql:mysql -d katastrophe/nginx-php-fpm
-```
-### Enquireabling SSL or Special Nginx Configs
-As with all docker containers its possible to link resources from the host OS to the guest. This makes it really easy to link in custom nginx default config files or extra virtual hosts and SSL enabled sites. For SSL sites first create a directory somewhere such as */opt/deployname/ssl/*. In this directory drop you SSL cert and Key in. Next create a directory for your custom hosts such as  */opt/deployname/nginx-conf*. In here load your custom default.conf file which references your SSL cert and keys at the location, for example:  */etc/nginx/ssl/xxxx.key*
+### Docker Hub
+The Docker Hub page for this project can be found [here](https://hub.docker.com/r/katastrophe/nginx-php-fpm/).
 
-Then start your container and connect these volumes like so:
-```
-sudo docker run -e 'GIT_REPO=git@github.com:you/website.git’ -v /opt/ngddeploy/:/root/.ssh -v /opt/deployname/ssl:/etc/nginx/ssl -v /opt/deployname/nginx-conf:/etc/nginx/conf.d -p 8080:80 --link some-mysql:mysql -d katastrophe/nginx-php-fpm
-```
-## Special Features
+## Usage
 
-### Push code to Git
-To push code changes back to git simply run:
-```
-sudo docker exec -t -i <CONATINER_NAME> /usr/bin/push
-```
-### Pull code from Git (Refresh)
-In order to refresh the code in a container and pull newer code form git simply run:
-```
-sudo docker exec -t -i <CONTAINER_NAME> /usr/bin/pull
-```
-### Install Extra Modules
-If you wish to install extras at boot time, such as extra php modules you can specify this by adding the RPMS flag, to add multiple packages you need to space separate the values:
-```
-sudo docker run --name nginx -e ‘RPMS=php-snmp php-pspell” -p 8080:80 -d katastrophe/nginx-php-fpm
-```
-### Templating
-This container will automatically configure your web application if you template your code. For example if you are linking to MySQL like above, and you have a config.php file where you need to set the MySQL details include $$_MYSQL_ENV_MYSQL_DATABASE_$$ style template tags.
+### Pulling from Docker Hub
+To pull this Dockerfile from Docker Hub:
 
-Example:
-```
-<?php
-database_name = $$_MYSQL_ENV_MYSQL_DATABASE_$$;
-database_host = $$_MYSQL_PORT_3306_TCP_ADDR_$$;
-...
-?>
-```
-### Using environment variables
-If you want to link to an external MySQL DB and not using linking you can pass variables directly to the container that will be automatically configured by the container.
+	docker pull katastrophe/nginx-php-fpm
 
-Example:
-```
-sudo docker run -e 'GIT_REPO=git@github.com:you/website.git' -e 'GIT_BRANCH=stage' -e 'MYSQL_HOST=host.x.y.z' -e 'MYSQL_USER=username' -e 'MYSQL_PASS=password' -v /opt/ngddeploy/:/root/.ssh -p 8080:80 -d katastrophe/nginx-php-fpm
-```
+### Running
+Run the container with minimal configuration and options:
 
-This will expose the following variables that can be used to template your code.
-```
-MYSQL_HOST=host.x.y.z
-MYSQL_USER=username
-MYSQL_PASS=password
-```
-To use these variables in a template you'd do the following in your file:
-```
-<?php
-database_host = $$_MYSQL_HOST_$$;
-database_user = $$_MYSQL_USER_$$;
-database_pass = $$_MYSQL_PASS_$$
-...
-?>
-```
-### Enable Templating
-In order to speed up boot time templating is now diabled by default, if you wish to enable it simply include the flag below:
-```
--e TEMPLATE_NGINX_HTML=1
-```
-### Template anything
-Yes ***ANYTHING***, any variable exposed by a linked container or the **-e** flag lets you template your configuration files. This means you can add redis, mariaDB, memcache or anything you want to your application very easily.
+	docker run --name <container_name> -p 8080:80 -d -h <container_hostname> katastrophe/nginx-php-fpm
 
-## Logging and Errors
+This will run the container, and you can access the web server by browsing to http://docker-host:8080
 
-### Logging
-All logs should now print out in stdout/stderr and are available via the docker logs command:
-```
-docker logs <CONTAINER_NAME>
-```
-### Displaying Errors
-If you want to display PHP errors on screen (in the browser) for debugging purposes use this feature:
-```
--e ERRORS=1
-```
+### Other options
+
+#### Linking volumes
+
+Syntax: `-v /host/path:/container/path`
+
+You can use Docker to link a path within the container to a path on the host. For example, to expose the web server's document root on the Docker host at `/opt/website`, you could use:
+
+	docker run --name <container_name> -p 8080:80 -d -h <container_hostname> -v /opt/website:/usr/share/nginx/html katastrophe/nginx-php-fpm
+
+#### Git integration
+
+Syntax: `-e 'GIT_REPO=git@git-server:repository.git' -e 'GIT_NAME=Mary' -e 'GIT_EMAIL=mary@company.tld' -e 'GIT_BRANCH=master'`
+
+This container supports automatically cloning a git repository upon deploy. It also provides a `pull` and a `push` script for automatically pushing to/pulling from git from within the container.
+
+There are four environment variables that can be set for this:
+
+- `GIT_REPO`: The URL to the Git repository. This can be an SSH URL (`git@git-server:repository.git`) or an HTTP URL (`http://git-server/repository.git`). Be sure to read below about Git authentication. If `GIT_REPO` is specified, it will be cloned upon deploy.
+- `GIT_EMAIL`: This is optional, but will set the email address used in commits made within this container.
+- `GIT_NAME`: This is also optional, but will set the name used in commits made within this container.
+- `GIT_BRANCH`: This is also optional, but will be used to specify which branch should be used for the git repository being cloned.
+
+##### Notes on Git authentication
+
+If specifying a HTTP URL that points to a public repository not requiring authentication, nothing further needs to be done. If authentication is required, I recommend using an SSH URL and providing an SSH key to be used for the deploy. 
+
+This can be done using linked volumes (see above): before deploying the container, create a folder on the Docker host, such as `/opt/deploy` and create a file called `id_rsa` in it containing the private key used to authenticate to the Git host. **It is important** that you then set the permissions on the key correctly: `chmod 0600 /opt/deploy/id_rsa` or the key will not be used. Then link `/opt/deploy` on the host to `/root/.ssh` within the container using these flags: `-v /opt/deploy:/root/.ssh`.
+
+##### Pushing and pulling
+
+There are two scripts available that make it easy to push and pull to/from your repository from the container or Docker host: `/usr/bin/push` and `/usr/bin/pull`. From within the container, you can just run `push` or `pull`. From the Docker host, you'd run:
+
+	docker exec -t -i <container_name> /usr/bin/push
+
+or
+
+	docker exec -t - i <container_name> /usr/bin/pull
+
+#### Composer
+
+Composer is automatically installed within the container at `/usr/bin/composer` and can be run from within the container as `composer`. For example:
+
+	cd /usr/share/nginx/html
+	composer install
+
+The container can also automatically run `composer install` to install requried dependencies.
+
+Syntax: `-e 'RUN_COMPOSER=true'`
+
+If `RUN_COMPOSER` is set to true as an environment variable using the `-e` flag, `composer install` will automatically be run within the document root.
+
+#### PHP Errors
+
+By default, PHP errors are logged but not displayed to the end user in the browser. To change this default, you can set `ERRORS` environment variable to `true`.
+
+Syntax: `-e 'ERRORS=true'`
+
+#### Container Linking and Templating
+
+I will document these features in the near future, however for the moment I have not had the opportunity. They are currently, however, identical to the same features from the repository this project was forked from, so for usage information, see the relevant sections of [this README](https://github.com/ngineered/nginx-php-fpm/blob/master/README.md).
