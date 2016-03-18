@@ -19,6 +19,11 @@ if [ ! -z "$RPMS" ]; then
  yum install -y $RPMS
 fi
 
+# Install Composer globally
+php -r "readfile('https://getcomposer.org/installer');" > /tmp/composer-setup.php
+php /tmp/composer-setup.php -- --install-dir=/usr/bin --filename=composer
+php -r "unlink('/tmp/composer-setup.php');"
+
 # Pull down code form git for our site!
 if [ ! -z "$GIT_REPO" ]; then
   rm /usr/share/nginx/html/*
@@ -30,8 +35,12 @@ if [ ! -z "$GIT_REPO" ]; then
   chown -Rf nginx.nginx /usr/share/nginx/*
 fi
 
+if [ ! -z "$RUN_COMPOSER" ]; then
+  cd /usr/share/nginx/html && composer -n install
+fi
+
 # Display PHP error's or not
-if [[ "$ERRORS" != "1" ]] ; then
+if [[ "$ERRORS" != "true" ]] ; then
   sed -i -e "s/error_reporting =.*=/error_reporting = E_ALL/g" /etc/php.ini
   sed -i -e "s/display_errors =.*/display_errors = On/g" /etc/php.ini
 fi
