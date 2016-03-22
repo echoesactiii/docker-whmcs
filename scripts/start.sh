@@ -48,10 +48,11 @@ if [ ! -z "$RUN_COMPOSER" ]; then
 fi
 
 # Display PHP error's or not
-if [[ "$ERRORS" != "true" ]] ; then
-  sed -i -e "s/error_reporting =.*=/error_reporting = E_ALL/g" /etc/php.ini
+if [[ "$ERRORS" == "true" ]] ; then
+  sed -i -e "s/error_reporting =.*/error_reporting = E_ALL/g" /etc/php.ini
   sed -i -e "s/display_errors =.*/display_errors = On/g" /etc/php.ini
 fi
+
 
 # Tweak nginx to match the workers to cpu's
 
