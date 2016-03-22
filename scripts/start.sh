@@ -53,6 +53,8 @@ if [[ "$ERRORS" == "true" ]] ; then
   sed -i -e "s/display_errors =.*/display_errors = On/g" /etc/php.ini
 fi
 
+# Create path for PHP sessions
+mkdir -p -m 0777 /var/lib/php/session
 
 # Tweak nginx to match the workers to cpu's
 
