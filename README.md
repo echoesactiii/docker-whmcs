@@ -1,5 +1,5 @@
 ## Introduction
-This Dockerfile will build a container image for nginx with php-fpm for web development and webapps. It supports templating, automated cloning from git, installation of [Composer](https://getcomposer.org/) and the installation of dependencies using Composer. The image is based on CentOS 7, and was initally forked from [this repository](https://github.com/ngineered/nginx-php-fpm](https://github.com/ngineered/nginx-php-fpm).
+This Dockerfile will build a container image for nginx with php-fpm for web development and webapps. It supports templating, automated cloning from git, installation of [Composer](https://getcomposer.org/) and the installation of dependencies using Composer. The image is based on CentOS 7, and was initally forked from [this repository](https://github.com/ngineered/nginx-php-fpm).
 
 ## Repositories
 
@@ -15,6 +15,12 @@ The Docker Hub page for this project can be found [here](https://hub.docker.com/
 To pull this Dockerfile from Docker Hub:
 
 	docker pull katastrophe/nginx-php-fpm
+
+### Building from source
+You can build this container from source with:
+
+	git clone https://github.com/TheKatastrophe/nginx-php-fpm.git
+	docker build -t katastrophe/nginx-php-fpm:latest .
 
 ### Running
 Run the container with minimal configuration and options:
@@ -79,9 +85,15 @@ If `RUN_COMPOSER` is set to true as an environment variable using the `-e` flag,
 
 #### PHP Errors
 
-By default, PHP errors are logged but not displayed to the end user in the browser. To change this default, you can set `ERRORS` environment variable to `true`.
+By default, PHP errors are logged but not displayed to the end user in the browser. To change this default, you can set the `ERRORS` environment variable to `true`.
 
 Syntax: `-e 'ERRORS=true'`
+
+#### PHP Timezone
+
+PHP requires a timezone to be set explicitly, so we pass this in using the `PHPTZ` environment variable. If this is not specified, it will be defaulted to `Europe/London`.
+
+Syntax: `-e 'PHPTZ=America/New_York'`
 
 #### Container Linking and Templating
 
