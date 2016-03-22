@@ -56,6 +56,12 @@ fi
 # Create path for PHP sessions
 mkdir -p -m 0777 /var/lib/php/session
 
+# Set PHP timezone
+if [ -z "$PHPTZ" ]; then
+  PHPTZ="Europe/London"
+fi
+echo date.timezone = $PHPTZ >>/etc/php.ini
+
 # Tweak nginx to match the workers to cpu's
 
 procs=$(cat /proc/cpuinfo |grep processor | wc -l)
