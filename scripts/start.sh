@@ -1,50 +1,8 @@
 #!/bin/bash
 
-# Disable Strict Host checking for non interactive git clones, set permissions for SSH key if it exists.
-
-mkdir -p -m 0700 /root/.ssh
-if [ ! -e "/root/.ssh/config" ]; then
-  echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
-else
-  grep "StrictHostKeyChecking no" /root/.ssh/config || echo -e "Host *\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
-fi
-if [ -e "/root/.ssh/id_rsa" ]; then
-  chmod 0600 /root/.ssh/id_rsa
-fi
-
-
-# Setup git variables
-if [ ! -z "$GIT_EMAIL" ]; then
- git config --global user.email "$GIT_EMAIL"
-fi
-if [ ! -z "$GIT_NAME" ]; then
- git config --global user.name "$GIT_NAME"
- git config --global push.default simple
-fi
-
 # Install Extras
 if [ ! -z "$RPMS" ]; then
  yum install -y $RPMS
-fi
-
-# Install Composer globally
-php -r "readfile('https://getcomposer.org/installer');" > /tmp/composer-setup.php
-php /tmp/composer-setup.php -- --install-dir=/usr/bin --filename=composer
-php -r "unlink('/tmp/composer-setup.php');"
-
-# Pull down code form git for our site!
-if [ ! -z "$GIT_REPO" ]; then
-  rm /usr/share/nginx/html/*
-  if [ ! -z "$GIT_BRANCH" ]; then
-    git clone -b $GIT_BRANCH $GIT_REPO /usr/share/nginx/html/
-  else
-    git clone $GIT_REPO /usr/share/nginx/html/
-  fi
-  chown -Rf nginx.nginx /usr/share/nginx/*
-fi
-
-if [ ! -z "$RUN_COMPOSER" ]; then
-  cd /usr/share/nginx/html && composer -n install
 fi
 
 # Display PHP error's or not
@@ -67,17 +25,19 @@ echo date.timezone = $PHPTZ >>/etc/php.ini
 procs=$(cat /proc/cpuinfo |grep processor | wc -l)
 sed -i -e "s/worker_processes 5/worker_processes $procs/" /etc/nginx/nginx.conf
 
-# Very dirty hack to replace variables in code with ENVIRONMENT values
-if [[ "$TEMPLATE_NGINX_HTML" == "1" ]] ; then
-  for i in $(env)
-  do
-    variable=$(echo "$i" | cut -d'=' -f1)
-    value=$(echo "$i" | cut -d'=' -f2)
-    if [[ "$variable" != '%s' ]] ; then
-      replace='\$\$_'${variable}'_\$\$'
-      find /usr/share/nginx/html -type f -exec sed -i -e 's/'${replace}'/'${value}'/g' {} \;
-    fi
-  done
+# Install the correct ionCube loader and WHMCS
+if [ ! -e /.first-run-complete ]; then
+  PHPVERSION=$(php --version | grep '^PHP' | sed 's/PHP \([0-9]\.[0-9]*\).*$/\1/')
+  mkdir /usr/local/ioncube
+  cp /tmp/ioncube/ioncube_loader_lin_$PHPVERSION.so /usr/local/ioncube
+  echo zend_extension = /usr/local/ioncube/ioncube_loader_lin_$PHPVERSION.so >>/etc/php.ini
+
+  rm -f /usr/share/nginx/html/*.html
+  cd /usr/share/nginx/html && unzip whmcs.zip && mv whmcs/* . && rmdir whmcs
+  touch /usr/share/nginx/html/configuration.php && chown nginx:nginx /usr/share/nginx/html/configuration.php && chmod 0777 /usr/share/nginx/html/configuration.php
+  rm -f /usr/share/nginx/html/whmcs.zip
+
+  echo "Do not remove this file." > /.first-run-complete
 fi
 
 # Again set the right permissions (needed when mounting from a volume)

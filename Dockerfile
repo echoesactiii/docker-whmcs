@@ -15,11 +15,11 @@ RUN \
 RUN rpm -Uvh http://nginx.org/packages/centos/7/noarch/RPMS/nginx-release-centos-7-0.el7.ngx.noarch.rpm && \
 yum -y install nginx
 
-# Install php-fpm etc
-RUN yum -y install php-fpm php-mysql php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap
+# Install php-fpm etc as well as wget/unzip
+RUN yum -y install php-fpm php-mysql php-ldap php-cli php-mbstring php-pdo php-pear php-xml php-soap php-gd wget unzip
 
-# Install git too
-RUN yum -y install git
+# Get & extract ionCube Loader
+RUN wget -O /tmp/ioncube.tgz http://downloads3.ioncube.com/loader_downloads/ioncube_loaders_lin_x86-64_5.1.2.tar.gz && tar -zxf /tmp/ioncube.tgz -C /tmp
 
 # tweak php-fpm config
 RUN sed -i -e "s/;cgi.fix_pathinfo=1/cgi.fix_pathinfo=0/g" /etc/php.ini && \
@@ -58,8 +58,8 @@ RUN chmod 755 /start.sh
 # Setup Volume
 VOLUME ["/usr/share/nginx/html"]
 
-# add test PHP file
-ADD src/index.php /usr/share/nginx/html/index.php
+# copy in WHMCS archive
+ADD src/whmcs_v631_full.zip /usr/share/nginx/html/whmcs.zip
 RUN chown -Rf nginx.nginx /usr/share/nginx/html/
 
 # Expose Ports
