@@ -50,12 +50,14 @@ ADD conf/supervisord.conf /etc/supervisord.conf
 ADD scripts/start.sh /start.sh
 RUN chmod 755 /start.sh
 
+# copy in WHMCS archive
+ADD src/whmcs_v631_full.zip /whmcs.zip
+
+# fix permissions
+RUN chown -Rf nginx.nginx /usr/share/nginx/html/
+
 # Setup Volume
 VOLUME ["/usr/share/nginx/html"]
-
-# copy in WHMCS archive
-ADD src/whmcs_v631_full.zip /usr/share/nginx/html/whmcs.zip
-RUN chown -Rf nginx.nginx /usr/share/nginx/html/
 
 # Expose Ports
 EXPOSE 443
