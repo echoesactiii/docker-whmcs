@@ -33,7 +33,7 @@ if [ ! -e /.first-run-complete ]; then
   echo zend_extension = /usr/local/ioncube/ioncube_loader_lin_$PHPVERSION.so >>/etc/php.ini
 
   rm -f /usr/share/nginx/html/*.html
-  cd /usr/share/nginx/html && unzip whmcs.zip && mv whmcs/* . && rmdir whmcs
+  unzip /usr/share/nginx/html/whmcs.zip -d /usr/share/nginx/html && mv /usr/share/nginx/html/whmcs/* /usr/share/nginx/html && rmdir /usr/share/nginx/html/whmcs
   touch /usr/share/nginx/html/configuration.php && chown nginx:nginx /usr/share/nginx/html/configuration.php && chmod 0777 /usr/share/nginx/html/configuration.php
   rm -f /usr/share/nginx/html/whmcs.zip
 
